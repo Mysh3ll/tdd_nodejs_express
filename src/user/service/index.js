@@ -8,4 +8,8 @@ const save = async (body) => {
   await User.create(user);
 };
 
-export default { save };
+const findByEmail = async (email) => {
+  return await User.findOne({ where: { email } });
+};
+
+export default { save, findByEmail };
