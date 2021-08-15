@@ -139,6 +139,28 @@ describe('User Registration', () => {
     const { body } = response;
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email']);
   });
+
+  it('should creates user in inactive mode', async () => {
+    await postUser();
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.inactive).toBe(true);
+  });
+
+  it('should creates user in inactive mode even the request body contains inactive as false', async () => {
+    const newUser = { ...validUser, inactive: false };
+    await postUser(newUser);
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.inactive).toBe(true);
+  });
+
+  it('should creates an activationToken for user', async () => {
+    await postUser();
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.activationToken).toBeTruthy();
+  });
 });
 
 describe('Internationalization', () => {
@@ -170,7 +192,7 @@ describe('Internationalization', () => {
     ${'password'} | ${'lower4nd5667'}  | ${password_pattern}
     ${'password'} | ${'UPPER44444'}    | ${password_pattern}
   `(
-    'returns $expectedMessage when $field is $value when language is set as french',
+    'should returns $expectedMessage when $field is $value when language is set as french',
     async ({ field, expectedMessage, value }) => {
       const user = {
         username: 'user1',
@@ -184,13 +206,13 @@ describe('Internationalization', () => {
     }
   );
 
-  it(`returns ${email_inuse} when same email is already in use when language is set as french`, async () => {
+  it(`should returns ${email_inuse} when same email is already in use when language is set as french`, async () => {
     await User.create({ ...validUser });
     const response = await postUser({ ...validUser }, { language: 'fr' });
     expect(response.body.validationErrors.email).toBe(email_inuse);
   });
 
-  it(`returns success message of ${user_create_success} when signup request is valid and language is set as french`, async () => {
+  it(`should returns success message of ${user_create_success} when signup request is valid and language is set as french`, async () => {
     const response = await postUser({ ...validUser }, { language: 'fr' });
     expect(response.body.message).toBe(user_create_success);
   });
