@@ -19,6 +19,7 @@
     "i18next": "^20.4.0",
     "i18next-fs-backend": "^1.1.1",
     "i18next-http-middleware": "^3.1.4",
+    "nodemailer": "^6.6.3",
     "sequelize": "^6.6.5",
     "sqlite3": "^5.0.2"
   },
@@ -32,6 +33,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "jest": "^27.0.6",
+    "nodemailer-stub": "^1.2.2",
     "nodemon": "^2.0.12",
     "prettier": "^2.3.2",
     "supertest": "^6.1.4"
