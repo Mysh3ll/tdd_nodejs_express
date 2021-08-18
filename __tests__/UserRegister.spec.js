@@ -3,6 +3,7 @@ import app from '../src/app';
 import User from '../src/user/model';
 import { sequelize } from '../src/config/database';
 import { interactsWithMail } from 'nodemailer-stub';
+import EmailService from '../src/email/service';
 
 beforeAll(() => {
   return sequelize.sync();
@@ -171,6 +172,34 @@ describe('User Registration', () => {
     const savedUser = users[0];
     expect(lastMail.content).toContain(savedUser.activationToken);
   });
+
+  it('should returns 502 Bad Gateway when sending email fails', async () => {
+    const mockSendAccountActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'Failed to deliver email' });
+    const response = await postUser();
+    mockSendAccountActivation.mockRestore();
+    expect(response.status).toBe(502);
+  });
+
+  it('should returns email failure message when sending email fails', async () => {
+    const mockSendAccountActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'Failed to deliver email' });
+    const response = await postUser();
+    mockSendAccountActivation.mockRestore();
+    expect(response.body.message).toBe('Email Failure');
+  });
+
+  it('should does not save user to database if activation email fails', async () => {
+    const mockSendAccountActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'Failed to deliver email' });
+    await postUser();
+    mockSendAccountActivation.mockRestore();
+    const users = await User.findAll();
+    expect(users.length).toBe(0);
+  });
 });
 
 describe('Internationalization', () => {
@@ -183,6 +212,7 @@ describe('Internationalization', () => {
   const password_pattern = 'Le mot de passe doit avoir au moins 1 majuscule, 1 lettre minuscule et 1 chiffre';
   const email_inuse = 'Email déjà utilisé';
   const user_create_success = 'Utilisateur créé';
+  const email_failure = "Échec de l'e-mail";
 
   it.each`
     field         | value              | expectedMessage
@@ -225,5 +255,14 @@ describe('Internationalization', () => {
   it(`should returns success message of ${user_create_success} when signup request is valid and language is set as french`, async () => {
     const response = await postUser({ ...validUser }, { language: 'fr' });
     expect(response.body.message).toBe(user_create_success);
+  });
+
+  it(`should returns ${email_failure} message when sending email fails and language is set as french`, async () => {
+    const mockSendAccountActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'Failed to deliver email' });
+    const response = await await postUser({ ...validUser }, { language: 'fr' });
+    mockSendAccountActivation.mockRestore();
+    expect(response.body.message).toBe(email_failure);
   });
 });
