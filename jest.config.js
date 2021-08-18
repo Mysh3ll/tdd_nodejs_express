@@ -9,4 +9,5 @@ module.exports = {
   },
   testMatch: ['<rootDir>/__tests__/*.spec.(js|jsx|ts|tsx)'],
   transformIgnorePatterns: ['<rootDir>/node_modules/'],
+  watchPlugins: ['jest-watch-typeahead/filename', 'jest-watch-typeahead/testname'],
 };
